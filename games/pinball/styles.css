@@ -1,0 +1,7 @@
+/* 서바이벌 랭귀지 — Design System entry point.
+   Consumers link only this file. Keep it as @import lines only. */
+@import './tokens/fonts.css';
+@import './tokens/colors.css';
+@import './tokens/typography.css';
+@import './tokens/spacing.css';
+@import './tokens/effects.css';

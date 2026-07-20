@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>원샷 핀볼 - 술자리 생존 게임</title>
+    <!-- 고급 폰트 추가 -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --container-bg: #1f2833;
+            --neon-blue: #45f3ff;
+            --neon-pink: #ff007f;
+            --neon-purple: #bd00ff;
+            --neon-green: #00ff66;
+            --text-color: #c5c6c7;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-color);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.2rem;
+            margin: 10px 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(69, 243, 255, 0.3);
+        }
+
+        /* 네비게이션 탭 스타일 */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 540px;
+            background: rgba(31, 40, 51, 0.4);
+            padding: 6px;
+            border-radius: 12px;
+            box-sizing: border-box;
+            border: 1px solid rgba(69, 243, 255, 0.1);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 5px;
+            font-size: 14px;
+            font-weight: 600;
+            background: transparent;
+            color: var(--text-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .tab-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: linear-gradient(135deg, rgba(69, 243, 255, 0.2), rgba(189, 0, 255, 0.2));
+            border: 1px solid rgba(69, 243, 255, 0.4);
+            box-shadow: 0 0 10px rgba(69, 243, 255, 0.2);
+        }
+
+        /* 게임 콘텐츠 영역 */
+        .game-content {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .controls {
+            width: 100%;
+            max-width: 540px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(31, 40, 51, 0.65);
+            padding: 20px;
+            border-radius: 12px;
+            box-sizing: border-box;
+            border: 1px solid rgba(69, 243, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .control-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .select-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            font-size: 14px;
+            color: var(--text-color);
+        }
+
+        select {
+            flex: 1;
+            padding: 12px;
+            font-size: 14px;
+            border: 1px solid rgba(197, 198, 199, 0.3);
+            border-radius: 8px;
+            background: rgba(11, 12, 16, 0.8);
+            color: #fff;
+            outline: none;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(69, 243, 255, 0.5);
+        }
+
+        input {
+            flex: 1;
+            padding: 14px;
+            font-size: 15px;
+            border: 1px solid rgba(197, 198, 199, 0.3);
+            border-radius: 8px;
+            background: rgba(11, 12, 16, 0.8);
+            color: #fff;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(69, 243, 255, 0.5);
+        }
+
+        button.start-btn {
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: inherit;
+            box-shadow: 0 4px 15px rgba(255, 0, 127, 0.4);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        button.start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 0, 127, 0.6);
+        }
+
+        button.start-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 10px rgba(255, 0, 127, 0.4);
+        }
+
+        /* 사운드 토글 스위치 */
+        .sound-toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-color);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #333;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--neon-blue);
+            box-shadow: 0 0 8px rgba(69, 243, 255, 0.5);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        #canvas-container {
+            width: 100%;
+            max-width: 540px;
+            height: 62vh;
+            background: #0b0c10;
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            border: 2px solid rgba(69, 243, 255, 0.3);
+            box-shadow: 0 0 25px rgba(69, 243, 255, 0.15), inset 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+
+        #result-board {
+            width: 100%;
+            max-width: 540px;
+            margin-top: 20px;
+            background: rgba(31, 40, 51, 0.6);
+            padding: 20px;
+            border-radius: 12px;
+            box-sizing: border-box;
+            border: 1px solid rgba(197, 198, 199, 0.15);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        #result-board h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 8px;
+        }
+
+        ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            text-shadow: 0 0 5px rgba(255,255,255,0.1);
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); text-shadow: 0 0 15px var(--neon-pink); }
+            50% { transform: scale(1.03); text-shadow: 0 0 25px var(--neon-pink), 0 0 10px #fff; }
+        }
+
+        /* 플레이스홀더 화면 */
+        .placeholder-content {
+            width: 100%;
+            max-width: 540px;
+            height: 60vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(31, 40, 51, 0.4);
+            border-radius: 16px;
+            border: 1px dashed rgba(255, 0, 127, 0.3);
+            text-align: center;
+            padding: 40px;
+            box-sizing: border-box;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .placeholder-content h2 {
+            font-size: 2rem;
+            color: var(--neon-pink);
+            text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .placeholder-content p {
+            font-size: 15px;
+            color: var(--text-color);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .neon-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 0, 127, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--neon-pink);
+            animation: spin 1s ease-in-out infinite;
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.3);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 생존 시리즈 링크 네비게이션 */
+        .survival-nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            width: 100%;
+            max-width: 540px;
+            background: rgba(31, 40, 51, 0.4);
+            padding: 6px;
+            border-radius: 30px;
+            box-sizing: border-box;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            justify-content: space-between;
+            backdrop-filter: blur(8px);
+            flex-wrap: wrap;
+        }
+
+        .survival-link {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 4px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--text-color);
+            background: transparent;
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            text-align: center;
+        }
+
+        .survival-link .flag {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .survival-link:hover {
+            color: #0b0c10;
+            background: #fff;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .survival-link:active {
+            transform: translateY(1px);
+        }
+
+        @media (max-width: 480px) {
+            .survival-nav {
+                gap: 6px;
+                padding: 6px;
+                margin-bottom: 20px;
+                border-radius: 16px;
+            }
+            .survival-link {
+                font-size: 11px;
+                padding: 6px 4px;
+                gap: 4px;
+                flex: 1 1 calc(50% - 6px);
+                min-width: 100px;
+            }
+            .survival-link .flag {
+                font-size: 14px;
+            }
+        }
+
+
+        /* 공 선택 컴포넌트 */
+        .ball-selector {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+            padding: 8px 12px;
+            background: rgba(11, 12, 16, 0.4);
+            border-radius: 25px;
+            border: 1px solid rgba(197, 198, 199, 0.15);
+            box-sizing: border-box;
+        }
+
+        .ball-select-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            background: radial-gradient(circle at 35% 35%, #fff 4%, var(--ball-color) 35%, rgba(0,0,0,0.7) 100%);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            padding: 0;
+        }
+
+        .ball-select-btn::after {
+            content: "✔";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            color: #fff;
+            font-size: 12px;
+            font-weight: bold;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .ball-select-btn.active {
+            transform: scale(1.15);
+            border-color: #fff;
+            box-shadow: 0 0 15px var(--ball-color);
+        }
+
+        .ball-select-btn.active::after {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .ball-select-btn:hover {
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 480px) {
+            .ball-selector {
+                gap: 8px;
+                padding: 6px 10px;
+            }
+            .ball-select-btn {
+                width: 25px;
+                height: 25px;
+            }
+            .ball-select-btn::after {
+                font-size: 10px;
+            }
+        }
+
+        /* 안내 문구 영역 스타일 */
+        .control-row-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: -6px;
+            padding-left: 4px;
+        }
+
+        .guide-tip {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--neon-blue);
+            text-shadow: 0 0 8px rgba(69, 243, 255, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .guide-tip.success {
+            color: var(--neon-green);
+            text-shadow: 0 0 8px rgba(0, 255, 102, 0.4);
+        }
+
+        .guide-tip.warning {
+            color: var(--neon-pink);
+            text-shadow: 0 0 8px rgba(255, 0, 127, 0.4);
+        }
+
+        /* 펄스 애니메이션 (미선택 시 힌트) */
+        @keyframes pulse-border {
+            0% { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); border-color: rgba(255, 255, 255, 0.4); }
+            50% { box-shadow: 0 0 15px var(--ball-color); border-color: #fff; }
+            100% { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); border-color: rgba(255, 255, 255, 0.4); }
+        }
+
+        .ball-select-btn.hint-pulse {
+            animation: pulse-border 2s infinite ease-in-out;
+        }
+
+        /* 흔들림 애니메이션 (오류 발생 시) */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .shake-highlight {
+            animation: shake 0.5s ease-in-out;
+            border-color: var(--neon-pink) !important;
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4) !important;
+        }
+
+
+    </style>
+</head>
+
+<body>
+
+    <!-- 뒤로가기 헤더 -->
+    <div style="display:flex;width:100%;max-w:540px;max-width:540px;justify-content:space-between;align-items:center;margin-bottom:20px;padding:0 10px;box-sizing:border-box;">
+        <button onclick="goBack()" style="background:transparent;border:none;color:#45f3ff;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Outfit',sans-serif;padding:10px 0;">
+            ← BACK TO MENU
+        </button>
+        <span style="color:#ff007f;font-weight:800;letter-spacing:1px;font-family:'Outfit',sans-serif;font-size:14px;">GAME 01</span>
+    </div>
+
+    <!-- 게임 1 콘텐츠 -->
+    <div id="game1-content" class="game-content">
+        <div class="controls">
+            <div class="control-row-header">
+                <span id="guideTip" class="guide-tip">💡 추첨할 공을 탭하여 선택해 주세요 (클릭하여 활성화)</span>
+            </div>
+            <div class="control-row">
+                <div class="ball-selector" id="ballSelector">
+                    <button type="button" class="ball-select-btn hint-pulse" data-color="#ff3b30" data-name="빨강" style="--ball-color: #ff3b30;" title="빨강"></button>
+                    <button type="button" class="ball-select-btn hint-pulse" data-color="#007aff" data-name="파랑" style="--ball-color: #007aff;" title="파랑"></button>
+                    <button type="button" class="ball-select-btn hint-pulse" data-color="#ffcc00" data-name="노랑" style="--ball-color: #ffcc00;" title="노랑"></button>
+                    <button type="button" class="ball-select-btn hint-pulse" data-color="#34c759" data-name="초록" style="--ball-color: #34c759;" title="초록"></button>
+                    <button type="button" class="ball-select-btn hint-pulse" data-color="#af52de" data-name="보라" style="--ball-color: #af52de;" title="보라"></button>
+                </div>
+                <button id="startBtn" class="start-btn">추첨 시작</button>
+            </div>
+            
+            <div class="control-row">
+                <!-- 우승 룰 선택 추가 (당첨으로 변경) -->
+                <div class="select-container">
+                    <span>🏆 당첨 기준:</span>
+                    <select id="winRule">
+                        <option value="first">🥇 선착순 당첨 (가장 먼저 골인)</option>
+                        <option value="last">🐌 꼴찌 당첨 (가장 마지막에 골인)</option>
+                    </select>
+                </div>
+                
+                <div class="sound-toggle-container">
+                    🔊 효과음
+                    <label class="switch">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div id="canvas-container">
+            <!-- 당첨 축하 팝업 모달 -->
+            <div id="winner-modal" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 12, 16, 0.95); z-index: 10; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; padding: 25px; padding-top: 40px; box-sizing: border-box; backdrop-filter: blur(10px); animation: fadeIn 0.4s ease-out;">
+                <h2 id="modal-title" style="color: var(--neon-pink); text-shadow: 0 0 15px var(--neon-pink); font-size: 1.8rem; margin: 0 0 15px 0; font-weight: 800; animation: pulse 1.5s infinite;">🎉 당첨을 축하합니다! 🎉</h2>
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); margin: 0 0 6px 0; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px;">🏆 최종 당첨자</h3>
+                    <p id="modal-winner" style="font-size: 2rem; font-weight: 800; color: #fff; margin: 0; text-shadow: 0 0 12px rgba(255,255,255,0.6);"></p>
+                </div>
+                <div style="width: 90%; max-height: 180px; overflow-y: auto; background: rgba(31, 40, 51, 0.7); padding: 15px; border-radius: 12px; border: 1px solid rgba(69, 243, 255, 0.25); box-sizing: border-box; scrollbar-width: thin;">
+                    <h4 style="color: var(--text-color); margin: 0 0 10px 0; font-size: 13px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">😢 아쉽게 탈락한 분들 (도착 순위)</h4>
+                    <div id="modal-losers" style="display: flex; flex-direction: column; gap: 6px; align-items: center; font-size: 13px; color: #888; font-weight: 500;"></div>
+                </div>
+                <button id="modal-close-btn" style="margin-top: 20px; padding: 10px 26px; background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple)); color: #fff; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; box-shadow: 0 0 15px rgba(69, 243, 255, 0.4); transition: 0.2s; font-family: inherit;">닫기</button>
+            </div>
+        </div>
+
+        <div id="result-board">
+            <h3 style="color: var(--neon-pink);">🏆 명예의 전당 (도착 순위)</h3>
+            <ol id="result-list"></ol>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('error', function(e) {
+            console.error('DEBUG ERROR:', e.message, 'at', e.filename, 'line:', e.lineno, 'col:', e.colno, 'stack:', e.error ? e.error.stack : 'no stack');
+        });
+
+        function goBack() {
+            location.href = '../../index.html';
+        }
+
+        // Web Audio API 사운드 합성 엔진 구축
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let soundEnabled = true;
+
+        document.getElementById('soundToggle').addEventListener('change', (e) => {
+            soundEnabled = e.target.checked;
+        });
+
+        function playHitSound(type) {
+            if (!soundEnabled) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'peg') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, now); // D5
+                osc.frequency.exponentialRampToValueAtTime(150, now + 0.08);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'special') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(329.63, now); // E4
+                osc.frequency.linearRampToValueAtTime(659.25, now + 0.12); // E5
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            } else if (type === 'spinner') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(440, now); // A4
+                osc.frequency.exponentialRampToValueAtTime(110, now + 0.05);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'portal') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.exponentialRampToValueAtTime(1760, now + 0.25);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'victory') {
+                // 화려한 8비트 팡파르 멜로디
+                const melody = [
+                    { f: 523.25, d: 0.08 },
+                    { f: 659.25, d: 0.08 },
+                    { f: 783.99, d: 0.08 },
+                    { f: 1046.50, d: 0.16 },
+                    
+                    { f: 698.46, d: 0.08 },
+                    { f: 880.00, d: 0.08 },
+                    { f: 1046.50, d: 0.08 },
+                    { f: 1396.91, d: 0.16 },
+                    
+                    { f: 783.99, d: 0.08 },
+                    { f: 987.77, d: 0.08 },
+                    { f: 1174.66, d: 0.08 },
+                    { f: 1567.98, d: 0.4 }
+                ];
+                
+                let timeOffset = 0;
+                melody.forEach((note) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(note.f, now + timeOffset);
+                    g.gain.setValueAtTime(0.18, now + timeOffset);
+                    g.gain.exponentialRampToValueAtTime(0.01, now + timeOffset + note.d);
+                    o.start(now + timeOffset);
+                    o.stop(now + timeOffset + note.d);
+                    timeOffset += note.d * 0.95;
+                });
+            }
+        }
+
+        // Matter.js 셋업
+        const Engine = Matter.Engine,
+            Render = Matter.Render,
+            Runner = Matter.Runner,
+            Bodies = Matter.Bodies,
+            Composite = Matter.Composite,
+            Events = Matter.Events,
+            Body = Matter.Body,
+            Constraint = Matter.Constraint;
+
+        const engine = Engine.create({
+            positionIterations: 8,
+            velocityIterations: 8
+        });
+        engine.timing.timeScale = 0.84; // 0.70에서 0.84로 올려 공 속도 20% 향상
+        
+        const container = document.getElementById('canvas-container');
+        const width = container.clientWidth;
+        const viewportHeight = container.clientHeight;
+        const mapHeight = viewportHeight * 2.4; // 가상 세로 물리 높이 (2.4배로 20% 확장)
+
+        const render = Render.create({
+            element: container,
+            engine: engine,
+            options: {
+                width: width,
+                height: viewportHeight,
+                wireframes: false,
+                background: '#090a0f', // 우주 스타일 다크 배경색으로 튜닝
+                hasBounds: true // 카메라 뷰포트 이동을 위해 활성화
+            }
+        });
+
+        // 맵 기본 경계벽 설정 (네온 색상 적용 - mapHeight 크기에 맞춤)
+        const ground = Bodies.rectangle(width / 2, mapHeight + 25, width, 50, { 
+            isStatic: true,
+            render: { fillStyle: '#1f2833' }
+        });
+        const leftWall = Bodies.rectangle(-25, mapHeight / 2, 50, mapHeight, { 
+            isStatic: true,
+            render: { fillStyle: '#1f2833' }
+        });
+        const rightWall = Bodies.rectangle(width + 25, mapHeight / 2, 50, mapHeight, { 
+            isStatic: true,
+            render: { fillStyle: '#1f2833' }
+        });
+
+        // 골인 센서
+        const sensor = Bodies.rectangle(width / 2, mapHeight - 10, width, 20, {
+            isStatic: true,
+            isSensor: true,
+            label: 'sensor',
+            render: { visible: false }
+        });
+
+        Composite.add(engine.world, [ground, leftWall, rightWall, sensor]);
+
+        // 1. 회전 스피너 (Rotators) 추가 (Y 좌표를 mapHeight 비율로 세팅, 크기는 뷰포트 너비 비례)
+        const spinnerWidth = width * 0.185;
+        const spinnerHeight = Math.max(6, width * 0.015);
+
+        const spinnerA = Bodies.rectangle(width * 0.3, mapHeight * 0.4, spinnerWidth, spinnerHeight, {
+            label: 'spinner',
+            render: { fillStyle: '#bd00ff', strokeStyle: '#fff', lineWidth: 1 }
+        });
+        const constraintA = Constraint.create({
+            pointA: { x: width * 0.3, y: mapHeight * 0.4 },
+            bodyB: spinnerA,
+            stiffness: 1,
+            length: 0,
+            render: { visible: false }
+        });
+
+        const spinnerB = Bodies.rectangle(width * 0.7, mapHeight * 0.58, spinnerWidth, spinnerHeight, {
+            label: 'spinner',
+            render: { fillStyle: '#bd00ff', strokeStyle: '#fff', lineWidth: 1 }
+        });
+        const constraintB = Constraint.create({
+            pointA: { x: width * 0.7, y: mapHeight * 0.58 },
+            bodyB: spinnerB,
+            stiffness: 1,
+            length: 0,
+            render: { visible: false }
+        });
+
+        Composite.add(engine.world, [spinnerA, constraintA, spinnerB, constraintB]);
+
+        // 2. 포털(웜홀) 센서 구성 (1개로 감소, 중앙 배치)
+        const portalIn1 = Bodies.circle(width * 0.5, mapHeight * 0.76, 22, {
+            isStatic: true,
+            isSensor: true,
+            label: 'portal-in-1',
+            render: { fillStyle: 'transparent' }
+        });
+        const portalOut1 = { x: width * 0.5, y: mapHeight * 0.15 };
+
+        Composite.add(engine.world, [portalIn1]);
+
+        // 핀 장애물들 자동 배치 (반응형 간격 및 크기 적용)
+        const pegRadius = Math.max(3.5, width * 0.009);
+        const spacing = Math.max(45, width / 8.3); 
+        const rows = Math.floor(mapHeight / spacing) - 2;
+        const cols = Math.floor(width / spacing);
+
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                let x = col * spacing + spacing / 2;
+                let y = row * spacing + spacing * 1.5;
+                if (row % 2 === 1) x += spacing / 2;
+
+                const distToSpinnerA = Math.hypot(x - (width * 0.3), y - (mapHeight * 0.4));
+                const distToSpinnerB = Math.hypot(x - (width * 0.7), y - (mapHeight * 0.58));
+                const distToPortalIn1 = Math.hypot(x - portalIn1.position.x, y - portalIn1.position.y);
+
+                // 반응형 거리 방어 조건 (스피너 및 포털 주변 공백 확보)
+                const minSpinnerDist = spinnerWidth * 0.8;
+                if (distToSpinnerA > minSpinnerDist && distToSpinnerB > minSpinnerDist && distToPortalIn1 > 45 && x < width - 6 && x > 6 && y < mapHeight - 70) {
+                    let isSpecial = Math.random() < 0.12;
+                    let peg = Bodies.circle(x, y, isSpecial ? pegRadius * 1.6 : pegRadius, {
+                        isStatic: true,
+                        label: isSpecial ? 'special-peg' : 'peg',
+                        render: { 
+                            fillStyle: isSpecial ? '#ff007f' : '#45f3ff',
+                            shadowBlur: isSpecial ? 15 : 0,
+                            shadowColor: isSpecial ? '#ff007f' : 'transparent'
+                        }
+                    });
+
+                    peg.plugin.originalColor = peg.render.fillStyle;
+                    Composite.add(engine.world, peg);
+                }
+            }
+        }
+
+        Render.run(render);
+        const runner = Runner.create();
+        Runner.run(runner, engine);
+
+        let balls = {};
+        let isRunning = false;
+        let particles = [];
+        let winnerDecided = false;
+        let lastBallPos = { x: width / 2, y: mapHeight - 50 }; // 당첨 이펙트 위치 기록용
+        let currentCameraY = 0; // 실시간 카메라 Y축 스크롤 위치
+        let allParticipants = []; // 당첨자/낙첨자 구분을 위한 전체 참가자 목록 백업
+        let spawnTimeoutIds = []; // 각 공의 스폰 타이머 ID 배열
+
+        function spawnParticles(x, y, color, count = 12) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6 - 2,
+                    radius: Math.random() * 3 + 1,
+                    color: color,
+                    alpha: 1,
+                    decay: Math.random() * 0.04 + 0.02
+                });
+            }
+        }
+
+        // 실시간 선두 공 추적 카메라 시스템 및 끼임(Stuck) 해제
+        Events.on(engine, 'afterUpdate', function() {
+            if (!isRunning) return;
+
+            // 공들의 움직임이 멈췄는지 감시 및 해소 (Anti-Stuck 고도화)
+            Object.values(balls).forEach(ball => {
+                const currentPos = { x: ball.position.x, y: ball.position.y };
+                const lastPos = ball.plugin.lastPosition || currentPos;
+                const distMoved = Math.hypot(currentPos.x - lastPos.x, currentPos.y - lastPos.y);
+                const speed = Math.hypot(ball.velocity.x, ball.velocity.y);
+
+                // 프레임 이동 거리가 극히 작거나 속도가 거의 없는 경우 stuck으로 판단
+                if (distMoved < 0.15 || speed < 0.1) {
+                    ball.plugin.stuckFrames = (ball.plugin.stuckFrames || 0) + 1;
+                    if (ball.plugin.stuckFrames > 180) { // 약 3초 동안 정지/갇힘 상태
+                        // 좁은 핀 틈새를 확실히 벗어나기 위해 위쪽으로 8px 순간이동 후 튕김 부여
+                        Matter.Body.setPosition(ball, {
+                            x: ball.position.x + (Math.random() - 0.5) * 12,
+                            y: ball.position.y - 8
+                        });
+                        Matter.Body.setVelocity(ball, {
+                            x: (Math.random() - 0.5) * 6,
+                            y: -4 - Math.random() * 2
+                        });
+                        spawnParticles(ball.position.x, ball.position.y, '#00ff66', 10);
+                        ball.plugin.stuckFrames = 0;
+                    }
+                } else {
+                    ball.plugin.stuckFrames = 0;
+                }
+                ball.plugin.lastPosition = currentPos;
+            });
+
+            let leadBall = null;
+            let maxY = -9999;
+            Object.values(balls).forEach(ball => {
+                if (ball.position.y > maxY) {
+                    maxY = ball.position.y;
+                    leadBall = ball;
+                }
+            });
+
+            let targetCameraY = 0;
+            if (leadBall) {
+                // 선두 공이 화면의 상단(35%)에 머물도록 스크롤 조절 (아래쪽 시야 확보)
+                const centerOffset = viewportHeight * 0.35;
+                if (leadBall.position.y > centerOffset) {
+                    targetCameraY = leadBall.position.y - centerOffset;
+                }
+                // 맵 하단 경계 제한 (골라인 밑까지 추적하도록 한계 확장)
+                const maxCameraY = mapHeight - viewportHeight + 80;
+                if (targetCameraY > maxCameraY) {
+                    targetCameraY = maxCameraY;
+                }
+            }
+
+            // 카메라 Lerp (공 추적 속도 대폭 향상: 0.15 -> 0.22)
+            currentCameraY += (targetCameraY - currentCameraY) * 0.22;
+            if (currentCameraY < 0) currentCameraY = 0;
+
+            // Render bounds 업데이트를 통한 카메라 이동 제어
+            render.bounds.min.y = currentCameraY;
+            render.bounds.max.y = currentCameraY + viewportHeight;
+            
+            Render.lookAt(render, {
+                min: { x: 0, y: currentCameraY },
+                max: { x: width, y: currentCameraY + viewportHeight }
+            });
+        });
+
+        Events.on(engine, 'beforeUpdate', function() {
+            Body.setAngularVelocity(spinnerA, 0.06);
+            Body.setAngularVelocity(spinnerB, -0.06);
+        });
+
+        // 캔버스 전처리: 배경 우주 성운 & 격자 그리기 (Space Cadet 스타일)
+        Events.on(render, 'beforeRender', function () {
+            const ctx = render.context;
+
+            // 카메라 스크롤에 따른 그리기 좌표 보정
+            ctx.save();
+            ctx.translate(0, -currentCameraY);
+
+            // 0. 배경 우주 성운 & 격자 그리기 (Space Cadet 스타일)
+            // 성운 방사형 그라데이션
+            const nebulaGrad = ctx.createRadialGradient(width / 2, mapHeight / 2, 50, width / 2, mapHeight / 2, mapHeight * 0.6);
+            nebulaGrad.addColorStop(0, '#0f0e21'); // 딥 바이올렛
+            nebulaGrad.addColorStop(0.45, '#050714'); // 어두운 남색
+            nebulaGrad.addColorStop(1, '#020205'); // 거의 검은색
+            ctx.fillStyle = nebulaGrad;
+            ctx.fillRect(0, 0, width, mapHeight);
+
+            // 네온 격자 그리드 그리기
+            ctx.strokeStyle = 'rgba(69, 243, 255, 0.035)';
+            ctx.lineWidth = 1;
+            const gridSize = 45;
+            for (let y = 0; y < mapHeight; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+            for (let x = 0; x < width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, mapHeight);
+                ctx.stroke();
+            }
+
+            // SF 느낌의 기하학적 데코 원형 링
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255, 0, 127, 0.08)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(width * 0.5, mapHeight * 0.45, Math.min(80, width * 0.2), 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.strokeStyle = 'rgba(69, 243, 255, 0.06)';
+            ctx.beginPath();
+            ctx.arc(width * 0.5, mapHeight * 0.45, Math.min(130, width * 0.35), 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.restore();
+        });
+
+        // 캔버스 후처리: 파티클 렌더링 및 포털 글로우 효과 (카메라 오프셋 적용)
+        Events.on(render, 'afterRender', function () {
+            const ctx = render.context;
+
+            // 카메라 스크롤에 따른 그리기 좌표 보정
+            ctx.save();
+            ctx.translate(0, -currentCameraY);
+
+            // 1. 포털 시각효과(글로우 & 나선 소용돌이)
+            const drawPortalEffect = (portal, color) => {
+                const glow = Math.abs(Math.sin(Date.now() / 150)) * 6 + 6;
+                const time = Date.now() / 300;
+                ctx.save();
+                
+                // 외곽 글로우 링
+                ctx.shadowBlur = 18;
+                ctx.shadowColor = color;
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(portal.position.x, portal.position.y, 22 + glow, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // 어두운 블랙홀 중심부
+                ctx.fillStyle = 'rgba(5, 5, 10, 0.85)';
+                ctx.beginPath();
+                ctx.arc(portal.position.x, portal.position.y, 22, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // 회전하는 소용돌이 나선
+                ctx.translate(portal.position.x, portal.position.y);
+                ctx.rotate(-time);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                for (let j = 0; j < 3; j++) {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 8 + j * 4, 0, Math.PI * 1.2, false);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            };
+
+            drawPortalEffect(portalIn1, '#00ff66');
+
+            const drawExitEffect = (pos, color) => {
+                const time = Date.now() / 250;
+                ctx.save();
+                ctx.translate(pos.x, pos.y);
+                ctx.rotate(time);
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = color;
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([6, 4]);
+                ctx.beginPath();
+                ctx.arc(0, 0, 16, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            };
+            drawExitEffect(portalOut1, '#00ff66');
+
+            // 2. 파티클 업데이트 및 드로잉 (합성 모드 'lighter'로 강렬하게 발광)
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = p.color;
+                ctx.fill();
+                ctx.restore();
+            }
+            ctx.restore();
+
+            // 3. 공 위에 이름 텍스트 렌더링
+            ctx.save();
+            ctx.font = 'bold 12px "Outfit", sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = '#000000';
+            
+            Object.values(balls).forEach(ball => {
+                ctx.fillText(ball.label, ball.position.x, ball.position.y - 15);
+            });
+            ctx.restore();
+
+            // 캔버스 변환 복구
+            ctx.restore();
+        });
+
+        // 공 선택 가이드 업데이트 함수
+        function updateSelectorGuide() {
+            const activeBtns = document.querySelectorAll('.ball-select-btn.active');
+            const totalBtns = document.querySelectorAll('.ball-select-btn');
+            const guideTip = document.getElementById('guideTip');
+            
+            if (activeBtns.length === 0) {
+                totalBtns.forEach(btn => {
+                    btn.classList.add('hint-pulse');
+                });
+                guideTip.textContent = "💡 추첨할 공을 탭하여 선택해 주세요 (클릭하여 활성화)";
+                guideTip.className = "guide-tip";
+            } else {
+                totalBtns.forEach(btn => {
+                    btn.classList.remove('hint-pulse');
+                });
+                guideTip.textContent = `✅ 준비 완료! ${activeBtns.length}개의 공이 선택되었습니다`;
+                guideTip.className = "guide-tip success";
+            }
+        }
+
+        // 공 선택 버튼 이벤트 바인딩 (자유롭게 토글 가능하도록 최적화)
+        const ballButtons = document.querySelectorAll('.ball-select-btn');
+        ballButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (isRunning) return; // 게임 구동 중에는 선택 불가
+                btn.classList.toggle('active');
+                updateSelectorGuide();
+            });
+        });
+
+        // 시작 버튼 리스너
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (isRunning) return;
+            
+            // 활성화된 공 목록 가져오기
+            const activeBtns = document.querySelectorAll('.ball-select-btn.active');
+            const selectedBalls = Array.from(activeBtns).map(btn => {
+                return {
+                    color: btn.getAttribute('data-color'),
+                    name: btn.getAttribute('data-name')
+                };
+            });
+
+            if (selectedBalls.length === 0) {
+                const ballSelector = document.getElementById('ballSelector');
+                const guideTip = document.getElementById('guideTip');
+                
+                // 흔들림 연출
+                ballSelector.classList.remove('shake-highlight');
+                void ballSelector.offsetWidth; // reflow 발생
+                ballSelector.classList.add('shake-highlight');
+                
+                // 가이드 메시지 경고 전환
+                guideTip.textContent = "🚨 추첨할 공을 최소 1개 이상 선택해야 합니다!";
+                guideTip.className = "guide-tip warning";
+                
+                // 경고음
+                playHitSound('portal');
+                return;
+            }
+
+            // 가이드 텍스트 진행중으로 표시
+            const guideTip = document.getElementById('guideTip');
+            guideTip.textContent = "🎮 추첨이 진행 중입니다...";
+            guideTip.className = "guide-tip";
+
+            // 충분한 스크롤 높이 확보를 위해 임시 바닥 여백 추가 (게임화면을 최상단에 맞추기 위함)
+            document.body.style.paddingBottom = '80vh';
+
+            // 게임 판 화면으로 부드럽게 스크롤 다운
+            setTimeout(() => {
+                const canvasContainer = document.getElementById('canvas-container');
+                const rect = canvasContainer.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const targetY = rect.top + scrollTop - 10; // 상단 여백 10px 두고 정확히 이동
+                window.scrollTo({ top: targetY, behavior: 'smooth' });
+            }, 50);
+
+            document.getElementById('result-list').innerHTML = '';
+            
+            // 카메라 위치 초기화 및 최상단 뷰포트 복귀
+            currentCameraY = 0;
+            Render.lookAt(render, {
+                min: { x: 0, y: 0 },
+                max: { x: width, y: viewportHeight }
+            });
+
+            // 전체 참가 공 목록 백업 및 이전 당첨 모달 창 숨김
+            allParticipants = selectedBalls.map(b => `${b.name} 공`);
+            document.getElementById('winner-modal').style.display = 'none';
+
+            spawnTimeoutIds.forEach(id => clearTimeout(id));
+            spawnTimeoutIds = [];
+
+            isRunning = true;
+            winnerDecided = false;
+
+            Object.values(balls).forEach(b => Composite.remove(engine.world, b));
+            balls = {};
+
+            selectedBalls.forEach((ballInfo, index) => {
+                const tid = setTimeout(() => {
+                    const startX = (width / 2) + (Math.random() * 60 - 30);
+                    // 모바일 최적화된 공 크기 반응형 계산
+                    const ballRadius = Math.max(8, width * 0.02);
+                    const ball = Bodies.circle(startX, -20, ballRadius, {
+                        restitution: 0.8,
+                        friction: 0.005,
+                        density: 0.08,
+                        render: {
+                            fillStyle: ballInfo.color,
+                            strokeStyle: '#fff',
+                            lineWidth: 2
+                        },
+                        label: `${ballInfo.name} 공`
+                    });
+                    
+                    ball.plugin.ballColor = ballInfo.color;
+                    balls[ball.id] = ball;
+                    Composite.add(engine.world, ball);
+                    
+                    playHitSound('spinner');
+                }, index * 450);
+                spawnTimeoutIds.push(tid);
+            });
+
+
+        });
+
+        // 물리 충돌 & 특수 기믹 이벤트 처리
+        Events.on(engine, 'collisionStart', function (event) {
+            event.pairs.forEach(pair => {
+                const bodyA = pair.bodyA;
+                const bodyB = pair.bodyB;
+
+                const ball = !bodyA.isStatic ? bodyA : !bodyB.isStatic ? bodyB : null;
+                const obstacle = bodyA.isStatic ? bodyA : bodyB.isStatic ? bodyB : null;
+
+                if (ball && obstacle) {
+                    const ballColor = ball.plugin.ballColor || '#fff';
+
+                    // 1. 센서 골인
+                    if (obstacle.label === 'sensor') {
+                        if (balls[ball.id]) {
+                            const list = document.getElementById('result-list');
+                            const li = document.createElement('li');
+                            
+                            const emojiMap = {
+                                '빨강 공': '🔴 빨강 공',
+                                '파랑 공': '🔵 파랑 공',
+                                '노랑 공': '🟡 노랑 공',
+                                '초록 공': '🟢 초록 공',
+                                '보라 공': '🟣 보라 공'
+                            };
+                            li.textContent = emojiMap[ball.label] || ball.label;
+                            list.appendChild(li);
+
+                            // 도착할 때마다 입자 효과 및 가벼운 골인음
+                            spawnParticles(ball.position.x, ball.position.y - 10, ballColor, 10);
+                            playHitSound('peg');
+
+                            lastBallPos = { x: ball.position.x, y: ball.position.y - 15 };
+                            
+                            delete balls[ball.id];
+                            Composite.remove(engine.world, ball);
+
+                            // 모든 공이 골인한 경우 게임 오버 및 당첨자 결정
+                            if (Object.keys(balls).length === 0) {
+                                isRunning = false;
+                                decideWinner();
+                            }
+                        }
+                    }
+                    // 2. 포털 순간이동 (페널티 1개로 단축)
+                    else if (obstacle.label === 'portal-in-1') {
+                        spawnParticles(ball.position.x, ball.position.y, '#00ff66', 15);
+                        Body.setPosition(ball, { x: portalOut1.x, y: portalOut1.y });
+                        Body.setVelocity(ball, { x: (Math.random() - 0.5) * 6, y: 3 });
+                        spawnParticles(portalOut1.x, portalOut1.y, '#00ff66', 15);
+                        playHitSound('portal');
+                    }
+                    // 3. 회전 스피너 충돌
+                    else if (obstacle.label === 'spinner') {
+                        playHitSound('spinner');
+                        spawnParticles(ball.position.x, ball.position.y, '#bd00ff', 8);
+                    }
+                    // 4. 스페셜 범퍼 충돌
+                    else if (obstacle.label === 'special-peg') {
+                        Body.setVelocity(ball, {
+                            x: (Math.random() - 0.5) * 12,
+                            y: -10
+                        });
+
+                        obstacle.render.fillStyle = '#fff';
+                        setTimeout(() => {
+                            obstacle.render.fillStyle = obstacle.plugin.originalColor;
+                        }, 120);
+
+                        playHitSound('special');
+                        spawnParticles(ball.position.x, ball.position.y, '#ff007f', 16);
+                    }
+                    // 5. 일반 핀 충돌
+                    else if (obstacle.label === 'peg') {
+                        obstacle.render.fillStyle = '#fff';
+                        setTimeout(() => {
+                            obstacle.render.fillStyle = obstacle.plugin.originalColor;
+                        }, 80);
+
+                        playHitSound('peg');
+                        spawnParticles(ball.position.x, ball.position.y, ballColor, 5);
+                    }
+                }
+            });
+        });
+
+        // 모달 닫기 버튼 이벤트 등록
+        document.getElementById('modal-close-btn').addEventListener('click', () => {
+            document.getElementById('winner-modal').style.display = 'none';
+            
+            // 모달을 닫을 때 다시 조작 영역이 보이도록 상단 스크롤
+            const controls = document.querySelector('.controls');
+            const rect = controls.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const targetY = rect.top + scrollTop - 20; // 패딩 여유 20px
+            window.scrollTo({ top: targetY, behavior: 'smooth' });
+
+            // 스크롤이 끝난 후(약 600ms 뒤) 바닥 여백 원복
+            setTimeout(() => {
+                document.body.style.paddingBottom = '20px';
+            }, 600);
+        });
+
+
+
+        // 당첨자 판정 함수 (우승 -> 당첨)
+        function decideWinner() {
+            if (winnerDecided) return;
+            
+            const list = document.getElementById('result-list');
+            if (list.children.length === 0) {
+                // 한 명도 골인하지 못하고 모두 탈락한 경우
+                winnerDecided = true;
+                document.getElementById('modal-winner').textContent = "없음 (도착한 공 없음)";
+                const losersContainer = document.getElementById('modal-losers');
+                losersContainer.innerHTML = '';
+                
+                // 선택되었던 공들을 모두 탈락자로 표시
+                allParticipants.forEach(name => {
+                    const div = document.createElement('div');
+                    div.style.display = 'flex';
+                    div.style.justifyContent = 'space-between';
+                    div.style.width = '100%';
+                    div.style.maxWidth = '250px';
+                    div.style.padding = '6px 12px';
+                    div.style.background = 'rgba(255, 255, 255, 0.04)';
+                    div.style.borderRadius = '6px';
+                    div.style.border = '1px solid rgba(69, 243, 255, 0.1)';
+                    div.style.boxSizing = 'border-box';
+                    
+                    const rankSpan = document.createElement('span');
+                    rankSpan.textContent = `탈락`;
+                    rankSpan.style.color = '#ff007f';
+                    rankSpan.style.fontWeight = 'bold';
+                    rankSpan.style.fontSize = '13px';
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = name;
+                    nameSpan.style.color = '#888';
+                    nameSpan.style.fontSize = '13px';
+                    
+                    div.appendChild(rankSpan);
+                    div.appendChild(nameSpan);
+                    losersContainer.appendChild(div);
+                });
+                
+                setTimeout(() => {
+                    document.getElementById('winner-modal').style.display = 'flex';
+                    updateSelectorGuide();
+                }, 1000);
+                return;
+            }
+
+            const winRule = document.getElementById('winRule').value;
+            let winnerLi;
+
+            if (winRule === 'first') {
+                // 선착순 당첨 (처음 도착)
+                winnerLi = list.firstElementChild;
+            } else {
+                // 꼴찌 당첨 (마지막 도착)
+                winnerLi = list.lastElementChild;
+            }
+
+            if (winnerLi) {
+                winnerDecided = true;
+                
+                // 당첨자 요소에 특별 비주얼 네온 효과 부여
+                winnerLi.style.color = '#ff007f';
+                winnerLi.style.fontWeight = 'bold';
+                winnerLi.style.fontSize = '18px';
+                winnerLi.style.textShadow = '0 0 10px rgba(255, 0, 127, 0.8)';
+                winnerLi.textContent += ' 👑 (당첨!)';
+
+                // 축하 연출
+                playHitSound('victory');
+                spawnParticles(lastBallPos.x, lastBallPos.y, '#ff007f', 40);
+
+                // 당첨자 이름 및 탈락자 명단 추출
+                const winnerName = winnerLi.textContent.replace(' 👑 (당첨!)', '').trim();
+                
+                // 도착 순위 정보 추출
+                const arrivalOrder = Array.from(list.children).map((li, idx) => {
+                    return {
+                        rank: idx + 1,
+                        name: li.textContent.replace(' 👑 (당첨!)', '').trim()
+                    };
+                });
+
+                // 당첨자와 탈락자 분리 (탈락자는 이미 골인 순서로 들어있으므로 등수 순)
+                const winnerObj = arrivalOrder.find(p => p.name === winnerName);
+                const losers = arrivalOrder.filter(p => p.name !== winnerName);
+
+                // 모달 텍스트 업데이트 (당첨자 등수 표기)
+                const winnerRankText = winnerObj ? `${winnerObj.rank}등 도착` : '';
+                document.getElementById('modal-winner').textContent = `${winnerName} (${winnerRankText})`;
+                
+                const losersContainer = document.getElementById('modal-losers');
+                losersContainer.innerHTML = '';
+
+                if (losers.length > 0) {
+                    // 탈락자 리스트는 당첨자를 제외하고 들어온 순서대로 무조건 2등, 3등, 4등... 순으로 표시
+                    losers.forEach((loser, index) => {
+                        const calculatedRank = 2 + index;
+                        
+                        const div = document.createElement('div');
+                        div.style.display = 'flex';
+                        div.style.justifyContent = 'space-between';
+                        div.style.width = '100%';
+                        div.style.maxWidth = '250px';
+                        div.style.padding = '6px 12px';
+                        div.style.background = 'rgba(255, 255, 255, 0.04)';
+                        div.style.borderRadius = '6px';
+                        div.style.border = '1px solid rgba(69, 243, 255, 0.1)';
+                        div.style.boxSizing = 'border-box';
+                        
+                        const rankSpan = document.createElement('span');
+                        rankSpan.textContent = `${calculatedRank}등`;
+                        rankSpan.style.color = 'var(--neon-blue)';
+                        rankSpan.style.fontWeight = 'bold';
+                        rankSpan.style.fontSize = '13px';
+                        
+                        const nameSpan = document.createElement('span');
+                        nameSpan.textContent = loser.name;
+                        nameSpan.style.color = '#ccc';
+                        nameSpan.style.fontSize = '13px';
+                        
+                        div.appendChild(rankSpan);
+                        div.appendChild(nameSpan);
+                        losersContainer.appendChild(div);
+                    });
+                } else {
+                    const noLosers = document.createElement('span');
+                    noLosers.textContent = '없음';
+                    noLosers.style.color = '#888';
+                    losersContainer.appendChild(noLosers);
+                }
+
+                // 골인 연출 감상을 위해 1초 뒤 당첨 결과 모달 노출
+                setTimeout(() => {
+                    document.getElementById('winner-modal').style.display = 'flex';
+                    updateSelectorGuide();
+                }, 1000);
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>

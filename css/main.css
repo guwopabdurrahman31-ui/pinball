@@ -1,0 +1,392 @@
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Outfit:wght@300;400;600;700;900&family=Space+Grotesk:wght@500;700&display=swap');
+
+:root {
+    --bg-dark: #070711;
+    --card-bg: rgba(18, 16, 38, 0.65);
+    --card-border: rgba(255, 255, 255, 0.1);
+    
+    --neon-pink: #ff007f;
+    --neon-cyan: #00f0ff;
+    --neon-purple: #9d4edd;
+    --neon-yellow: #ffee00;
+    --neon-green: #00ff88;
+    
+    --text-primary: #ffffff;
+    --text-secondary: #a0a5c0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Background canvas for interactive particles */
+#bg-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Ambient glow spheres */
+.glow-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: -1;
+    opacity: 0.35;
+    pointer-events: none;
+    animation: orbFloat 14s ease-in-out infinite alternate;
+}
+
+.orb-1 {
+    width: 450px;
+    height: 450px;
+    background: var(--neon-pink);
+    top: -100px;
+    left: -100px;
+}
+
+.orb-2 {
+    width: 500px;
+    height: 500px;
+    background: var(--neon-cyan);
+    bottom: -150px;
+    right: -100px;
+    animation-delay: -7s;
+}
+
+.orb-3 {
+    width: 350px;
+    height: 350px;
+    background: var(--neon-purple);
+    top: 40%;
+    left: 60%;
+    animation-delay: -3.5s;
+}
+
+@keyframes orbFloat {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(40px, -60px) scale(1.1); }
+    100% { transform: translate(-30px, 40px) scale(0.95); }
+}
+
+/* Header & Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    width: 100%;
+    flex: 1;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 50px;
+    position: relative;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 18px;
+    background: rgba(255, 0, 127, 0.12);
+    border: 1px solid rgba(ff, 0, 127, 0.3);
+    border-radius: 50px;
+    color: var(--neon-pink);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 20px rgba(255, 0, 127, 0.2);
+}
+
+.badge-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--neon-pink);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--neon-pink);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+h1.hero-title {
+    font-family: 'Bungee', cursive;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #ffffff 20%, var(--neon-cyan) 60%, var(--neon-pink) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+}
+
+p.hero-subtitle {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Quick Bar / Category */
+.quick-controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.random-play-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(157, 78, 221, 0.25));
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+}
+
+.random-play-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.4);
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.3), rgba(157, 78, 221, 0.4));
+}
+
+/* Games Grid */
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+    margin-top: 20px;
+}
+
+.game-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+}
+
+.game-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    padding: 1.5px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent 60%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+.game-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Card Themes */
+.game-card.pinball:hover {
+    border-color: rgba(69, 243, 255, 0.6);
+    box-shadow: 0 15px 35px rgba(69, 243, 255, 0.25);
+}
+.game-card.roulette:hover {
+    border-color: rgba(255, 0, 127, 0.6);
+    box-shadow: 0 15px 35px rgba(255, 0, 127, 0.25);
+}
+.game-card.mines:hover {
+    border-color: rgba(0, 255, 136, 0.6);
+    box-shadow: 0 15px 35px rgba(0, 255, 136, 0.25);
+}
+
+.card-thumbnail {
+    width: 100%;
+    height: 200px;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.card-thumbnail-icon {
+    font-size: 80px;
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+    transition: transform 0.4s ease;
+}
+
+.game-card:hover .card-thumbnail-icon {
+    transform: scale(1.15) rotate(5deg);
+}
+
+.pinball .card-thumbnail {
+    background: radial-gradient(circle at center, rgba(69, 243, 255, 0.25), rgba(11, 12, 16, 0.8));
+    border: 1px solid rgba(69, 243, 255, 0.2);
+}
+.roulette .card-thumbnail {
+    background: radial-gradient(circle at center, rgba(255, 0, 127, 0.25), rgba(11, 12, 16, 0.8));
+    border: 1px solid rgba(255, 0, 127, 0.2);
+}
+.mines .card-thumbnail {
+    background: radial-gradient(circle at center, rgba(0, 255, 136, 0.25), rgba(11, 12, 16, 0.8));
+    border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.card-badge-container {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 6px;
+}
+
+.card-badge {
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 12px;
+    color: #fff;
+}
+
+.card-header-info {
+    margin-bottom: 12px;
+}
+
+.card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 16px;
+    min-height: 42px;
+}
+
+.card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.tag {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.play-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.pinball .play-btn {
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    box-shadow: 0 4px 15px rgba(0, 198, 255, 0.3);
+}
+.pinball .play-btn:hover {
+    box-shadow: 0 6px 25px rgba(0, 198, 255, 0.6);
+}
+
+.roulette .play-btn {
+    background: linear-gradient(135deg, #f857a6, #ff5858);
+    box-shadow: 0 4px 15px rgba(255, 88, 88, 0.3);
+}
+.roulette .play-btn:hover {
+    box-shadow: 0 6px 25px rgba(255, 88, 88, 0.6);
+}
+
+.mines .play-btn {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    box-shadow: 0 4px 15px rgba(56, 239, 125, 0.3);
+}
+.mines .play-btn:hover {
+    box-shadow: 0 6px 25px rgba(56, 239, 125, 0.6);
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 30px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+footer span {
+    color: var(--neon-pink);
+}

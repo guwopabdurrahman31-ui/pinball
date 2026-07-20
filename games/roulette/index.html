@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  a { color: #00f0ff; }
+  a:hover { color: #7df9ff; }
+  @keyframes floatUp { from { opacity: 0; transform: translateY(24px) scale(.92);} to { opacity:1; transform: translateY(0) scale(1);} }
+  @keyframes ringPulse { 0%,100% { opacity:.5; transform: scale(1);} 50% { opacity:1; transform: scale(1.04);} }
+  @keyframes flick { 0%,100% { transform: translateX(-50%) rotate(0deg);} 50% { transform: translateX(-50%) rotate(-9deg);} }
+</style>
+</helmet>
+<div style="position:relative; width:100%; min-height:100%; background:radial-gradient(120% 90% at 50% -10%, #1a0b34 0%, #0a0616 55%, #05030d 100%); font-family:'Space Grotesk',sans-serif; color:#f4f0ff; overflow:hidden; display:flex; flex-direction:column;">
+
+  <!-- HOME NAV BUTTON -->
+  <div style="position:fixed; top:12px; left:12px; z-index:99999;">
+    <a href="../../index.html" style="background:rgba(10,6,22,0.85); border:1px solid #00f0ff; color:#00f0ff; padding:6px 14px; font-size:12px; font-weight:700; border-radius:20px; text-decoration:none; display:inline-flex; align-items:center; gap:4px; box-shadow:0 0 10px rgba(0,240,255,0.3); backdrop-filter:blur(4px);">
+      ← 🏠 MAIN
+    </a>
+  </div>
+
+  <div style="position:absolute; inset:0; background:radial-gradient(60% 40% at 50% 108%, rgba(255,45,155,.18), transparent 70%); pointer-events:none;"></div>
+
+  <!-- SETUP -->
+  <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ true }}">
+  <div style="position:relative; z-index:2; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 28px; text-align:center; gap:12px;">
+    <div style="font-size:13px; letter-spacing:.42em; color:#00f0ff; text-shadow:0 0 14px rgba(0,240,255,.6); font-weight:600;">SPIN · DRINK · REPEAT</div>
+    <h1 style="font-family:'Bungee',cursive; font-size:46px; line-height:.94; margin:6px 0 2px; letter-spacing:.02em; color:#fff; text-shadow:0 0 18px rgba(255,45,155,.75), 0 0 42px rgba(168,85,247,.55);">NEON<br>ROULETTE</h1>
+    <p style="max-width:270px; color:#b9aee0; font-size:15px; line-height:1.5; margin:8px 0 26px;">Spin the wheel. Whoever it lands on takes the drink. No mercy.</p>
+
+    <div style="font-size:12px; letter-spacing:.32em; color:#7c7099; margin-bottom:2px;">HOW MANY PLAYERS?</div>
+    <div style="display:flex; gap:16px; margin-top:12px;">
+      <button onClick="{{ pick2 }}" style="cursor:pointer; width:126px; height:126px; border-radius:26px; border:2px solid #ff2d9b; background:rgba(255,45,155,.08); color:#fff; font-family:'Bungee',cursive; font-size:20px; box-shadow:0 0 26px rgba(255,45,155,.4), inset 0 0 22px rgba(255,45,155,.12); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;">
+        <span style="font-size:40px; line-height:1;">2</span>
+        <span style="font-size:12px; letter-spacing:.18em; font-family:'Space Grotesk'; font-weight:600;">PLAYERS</span>
+      </button>
+      <button onClick="{{ pick4 }}" style="cursor:pointer; width:126px; height:126px; border-radius:26px; border:2px solid #00f0ff; background:rgba(0,240,255,.08); color:#fff; font-family:'Bungee',cursive; font-size:20px; box-shadow:0 0 26px rgba(0,240,255,.4), inset 0 0 22px rgba(0,240,255,.12); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;">
+        <span style="font-size:40px; line-height:1;">4</span>
+        <span style="font-size:12px; letter-spacing:.18em; font-family:'Space Grotesk'; font-weight:600;">PLAYERS</span>
+      </button>
+    </div>
+    <div style="margin-top:34px; font-size:12px; color:#5f567e; letter-spacing:.05em;">Please drink responsibly · 21+</div>
+  </div>
+  </sc-if>
+
+  <!-- GAME -->
+  <sc-if value="{{ isGame }}" hint-placeholder-val="{{ true }}">
+  <div style="position:relative; z-index:2; flex:1; display:flex; flex-direction:column;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:20px 22px 6px;">
+      <button onClick="{{ newGame }}" style="cursor:pointer; background:none; border:1px solid #3a3358; color:#b9aee0; border-radius:999px; padding:8px 14px; font-size:12px; font-weight:600; letter-spacing:.08em; font-family:'Space Grotesk';">↺ NEW</button>
+      <div style="font-family:'Bungee',cursive; font-size:16px; letter-spacing:.04em; color:#fff; text-shadow:0 0 14px rgba(168,85,247,.6);">NEON ROULETTE</div>
+      <button onClick="{{ toggleSound }}" style="cursor:pointer; background:none; border:1px solid #3a3358; color:#b9aee0; border-radius:999px; width:38px; height:34px; font-size:15px;">{{ soundIcon }}</button>
+    </div>
+
+    <!-- legend -->
+    <div style="display:flex; justify-content:center; flex-wrap:wrap; gap:10px; padding:10px 22px 4px;">
+      <sc-for list="{{ legend }}" as="p" hint-placeholder-count="4">
+        <div style="display:flex; align-items:center; gap:7px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); padding:5px 11px; border-radius:999px;">
+          <span style="width:11px; height:11px; border-radius:50%; background:{{ p.color }}; box-shadow:0 0 8px {{ p.color }};"></span>
+          <span style="font-size:12px; font-weight:600; color:#e9e3ff; letter-spacing:.05em;">{{ p.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:30px; padding:6px 22px 30px;">
+      <div style="position:relative; width:300px; height:300px;">
+        <!-- glow ring -->
+        <div style="position:absolute; inset:-14px; border-radius:50%; border:2px solid rgba(168,85,247,.35); box-shadow:0 0 40px rgba(168,85,247,.35); animation:ringPulse 2.6s ease-in-out infinite;"></div>
+        <!-- pointer -->
+        <div style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:15px solid transparent; border-right:15px solid transparent; border-top:26px solid #fff; z-index:5; filter:drop-shadow(0 0 8px rgba(255,255,255,.9)); {{ pointerAnim }}"></div>
+        <svg viewBox="0 0 300 300" style="width:100%; height:100%; display:block; filter:drop-shadow(0 0 22px rgba(0,0,0,.55));">
+          <circle cx="150" cy="150" r="146" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="6"></circle>
+          <g style="transform: rotate({{ angle }}deg); transform-box: fill-box; transform-origin: center; transition: transform 4.2s cubic-bezier(.12,.72,.03,1);">
+            <sc-for list="{{ segments }}" as="seg" hint-placeholder-count="8">
+              <path d="{{ seg.d }}" fill="{{ seg.color }}" stroke="#0a0616" stroke-width="2.5"></path>
+            </sc-for>
+            <sc-for list="{{ segments }}" as="seg" hint-placeholder-count="8">
+              <text x="{{ seg.tx }}" y="{{ seg.ty }}" transform="{{ seg.textTransform }}" text-anchor="middle" dominant-baseline="middle" fill="#0a0616" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="17">{{ seg.label }}</text>
+            </sc-for>
+          </g>
+          <circle cx="150" cy="150" r="26" fill="#0a0616" stroke="#fff" stroke-width="3"></circle>
+          <circle cx="150" cy="150" r="9" fill="#fff"></circle>
+        </svg>
+      </div>
+
+      <button onClick="{{ spin }}" disabled="{{ spinning }}" style="cursor:pointer; width:190px; height:64px; border-radius:999px; border:none; font-family:'Bungee',cursive; font-size:24px; letter-spacing:.06em; color:#0a0616; background:{{ spinBg }}; box-shadow:{{ spinGlow }}; transition:transform .1s, opacity .2s; opacity:{{ spinOpacity }};">{{ spinLabel }}</button>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- RESULT OVERLAY -->
+  <sc-if value="{{ hasResult }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeResult }}" style="position:absolute; inset:0; z-index:20; background:rgba(5,3,13,.82); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:32px;">
+    <div style="animation:floatUp .35s cubic-bezier(.2,.9,.2,1); width:100%; max-width:320px; text-align:center; border-radius:30px; padding:38px 26px; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:2px solid {{ resultColor }}; box-shadow:0 0 48px {{ resultColor }}, inset 0 0 30px rgba(255,255,255,.05);">
+      <div style="font-size:12px; letter-spacing:.36em; color:#b9aee0; margin-bottom:10px;">{{ resultKicker }}</div>
+      <div style="font-family:'Bungee',cursive; font-size:44px; line-height:1; color:{{ resultColor }}; text-shadow:0 0 20px {{ resultColor }}; margin-bottom:14px;">{{ resultLabel }}</div>
+      <div style="font-family:'Bungee',cursive; font-size:26px; color:#fff; text-shadow:0 0 16px rgba(255,255,255,.4); margin-bottom:8px;">{{ resultAmount }}</div>
+      <div style="font-size:14px; color:#b9aee0; margin-bottom:26px;">{{ resultSub }}</div>
+      <button onClick="{{ closeResult }}" style="cursor:pointer; width:100%; height:56px; border-radius:999px; border:none; font-family:'Bungee',cursive; font-size:19px; letter-spacing:.05em; color:#0a0616; background:{{ resultColor }}; box-shadow:0 0 24px {{ resultColor }};">SPIN AGAIN</button>
+    </div>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 390, &quot;height&quot;: 844}}">
+class Component extends DCLogic {
+  state = { screen: 'setup', playerCount: 2, angle: 0, spinning: false, result: null, soundOn: true, winIdx: null };
+
+  COLORS = { '1P':'#ff2d9b','2P':'#00f0ff','3P':'#b6ff2e','4P':'#a855f7','ALL':'#ff8a00','SAFE':'#38e0b0' };
+  AMOUNTS = ['ONE SIP','TWO SIPS','THREE SIPS','TAKE A SHOT','FINISH HALF','DOWN IT!'];
+
+  config() {
+    if (this.state.playerCount === 2) {
+      return [
+        { label: '1P', amount: 'ONE SIP' },
+        { label: '2P', amount: 'TWO SIPS' },
+        { label: '1P', amount: 'TAKE A SHOT' },
+        { label: '2P', amount: 'DOWN IT!' },
+        { label: 'ALL', amount: 'ONE SIP' },
+        { label: '1P', amount: 'THREE SIPS' },
+        { label: '2P', amount: 'FINISH HALF' },
+        { label: 'SAFE', amount: '' }
+      ];
+    }
+    return [
+      { label: '1P', amount: 'TWO SIPS' },
+      { label: '2P', amount: 'TAKE A SHOT' },
+      { label: '3P', amount: 'ONE SIP' },
+      { label: '4P', amount: 'DOWN IT!' },
+      { label: 'ALL', amount: 'ONE SIP' },
+      { label: 'SAFE', amount: '' },
+      { label: '2P', amount: 'FINISH HALF' },
+      { label: '4P', amount: 'THREE SIPS' }
+    ];
+  }
+
+  polar(r, deg) {
+    const a = deg * Math.PI / 180;
+    return [150 + r * Math.sin(a), 150 - r * Math.cos(a)];
+  }
+
+  segments() {
+    const cfg = this.config();
+    const seg = 45;
+    return cfg.map(({ label }, i) => {
+      const a0 = i * seg, a1 = (i + 1) * seg, am = a0 + seg / 2;
+      const [x0, y0] = this.polar(140, a0);
+      const [x1, y1] = this.polar(140, a1);
+      const [tx, ty] = this.polar(94, am);
+      return {
+        label,
+        color: this.COLORS[label] || '#888',
+        d: `M150 150 L${x0.toFixed(2)} ${y0.toFixed(2)} A140 140 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z`,
+        tx: tx.toFixed(2), ty: ty.toFixed(2),
+        textTransform: `rotate(${am} ${tx.toFixed(2)} ${ty.toFixed(2)})`
+      };
+    });
+  }
+
+  ac = null;
+  audio() {
+    if (!this.state.soundOn) return null;
+    if (!this.ac) { try { this.ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+    if (this.ac.state === 'suspended') this.ac.resume();
+    return this.ac;
+  }
+  tick() {
+    const ac = this.audio(); if (!ac) return;
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'square'; o.frequency.value = 1100;
+    g.gain.setValueAtTime(0.0001, ac.currentTime);
+    g.gain.linearRampToValueAtTime(0.08, ac.currentTime + 0.002);
+    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.05);
+    o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.06);
+  }
+  win() {
+    const ac = this.audio();
+    if (ac) {
+      [523, 659, 784, 1047].forEach((f, i) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'triangle'; o.frequency.value = f;
+        const t = ac.currentTime + i * 0.09;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(0.14, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+        o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.55);
+      });
+    }
+    if (navigator.vibrate) navigator.vibrate([0, 90, 50, 140]);
+  }
+  scheduleTicks() {
+    let t = 0, gap = 60; const dur = 4100;
+    const step = () => {
+      if (!this.state.spinning || t > dur) return;
+      this.tick();
+      if (navigator.vibrate) navigator.vibrate(10);
+      gap *= 1.055; t += gap;
+      this._tt = setTimeout(step, gap);
+    };
+    step();
+  }
+
+  start(n) { if (navigator.vibrate) navigator.vibrate(15); this.setState({ screen: 'game', playerCount: n, angle: 0, result: null }); }
+
+  spin = () => {
+    if (this.state.spinning) return;
+    const seg = 45;
+    const winIdx = Math.floor(Math.random() * 8);
+    const center = winIdx * seg + seg / 2;
+    const desiredMod = (360 - (center % 360) + 360) % 360;
+    const curMod = ((this.state.angle % 360) + 360) % 360;
+    const add = 5 * 360 + ((desiredMod - curMod + 360) % 360);
+    this.setState({ spinning: true, result: null, winIdx, angle: this.state.angle + add });
+    this.scheduleTicks();
+    clearTimeout(this._end);
+    this._end = setTimeout(() => this.reveal(winIdx), 4300);
+  };
+
+  reveal(winIdx) {
+    const { label, amount } = this.config()[winIdx];
+    const color = this.COLORS[label];
+    let result;
+    if (label === 'SAFE') {
+      result = { type: 'safe', label: 'LUCKY!', color, kicker: 'THE WHEEL SPARES YOU', amount: 'NO DRINK', sub: 'Pass the phone and gloat.' };
+    } else if (label === 'ALL') {
+      result = { type: 'all', label: 'EVERYONE', color, kicker: 'GROUP PENALTY', amount, sub: 'All players drink together.' };
+    } else {
+      result = { type: 'player', label: label, color, kicker: 'THE WHEEL HAS SPOKEN', amount, sub: label + ', this one is on you.' };
+    }
+    this.win();
+    this.setState({ spinning: false, result });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const hasResult = !!s.result;
+    return {
+      isSetup: s.screen === 'setup',
+      isGame: s.screen === 'game',
+      playerCount: s.playerCount,
+      angle: s.angle,
+      spinning: s.spinning,
+      segments: this.segments(),
+      legend: Array.from({ length: s.playerCount }, (_, i) => ({ label: (i + 1) + 'P', color: this.COLORS[(i + 1) + 'P'] })),
+      soundIcon: s.soundOn ? '🔊' : '🔇',
+      pointerAnim: s.spinning ? 'animation: flick .12s linear infinite;' : '',
+      spinLabel: s.spinning ? '...' : 'SPIN',
+      spinBg: 'linear-gradient(135deg,#ff2d9b,#a855f7)',
+      spinGlow: '0 0 30px rgba(255,45,155,.6), 0 8px 24px rgba(0,0,0,.4)',
+      spinOpacity: s.spinning ? 0.6 : 1,
+      pick2: () => this.start(2),
+      pick4: () => this.start(4),
+      spin: this.spin,
+      newGame: () => this.setState({ screen: 'setup', result: null, spinning: false, angle: 0 }),
+      toggleSound: () => this.setState({ soundOn: !s.soundOn }),
+      closeResult: () => { this.setState({ result: null }); },
+      hasResult,
+      resultColor: hasResult ? s.result.color : '#fff',
+      resultKicker: hasResult ? s.result.kicker : '',
+      resultLabel: hasResult ? s.result.label : '',
+      resultAmount: hasResult ? s.result.amount : '',
+      resultSub: hasResult ? s.result.sub : ''
+    };
+  }
+
+  componentWillUnmount() { clearTimeout(this._tt); clearTimeout(this._end); }
+}
+</script>
+</body>
+</html>

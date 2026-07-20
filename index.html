@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON ARCADE HUB - 원샷 생존 미니게임 포털</title>
+    <meta name="description" content="원샷 핀볼, 네온 룰렛, 지뢰 타일 등 3가지 원샷 생존 미니게임을 한 곳에서 즐길 수 있는 프리미엄 아케이드 포털">
+    
+    <!-- CSS Link -->
+    <link rel="stylesheet" href="./css/main.css">
+</head>
+<body>
+
+    <!-- Dynamic Particle Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Glowing Background Spheres -->
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="badge">
+                <span class="badge-dot"></span>
+                PARTY SURVIVAL ARCADE
+            </div>
+            <h1 class="hero-title">NEON ARCADE HUB</h1>
+            <p class="hero-subtitle">
+                한 번의 실수로 승패가 갈리는 스릴 넘치는 3가지 원샷 생존 미니게임을 지금 플레이하세요!
+            </p>
+            
+            <div class="quick-controls">
+                <button class="random-play-btn" id="randomPlayBtn">
+                    <span>🎲</span> 랜덤 게임 시작 (Quick Play)
+                </button>
+            </div>
+        </header>
+
+        <!-- Games Grid -->
+        <main class="games-grid">
+
+            <!-- Game 1: One-Shot Pinball -->
+            <article class="game-card pinball" onclick="location.href='./games/pinball/index.html'">
+                <div class="card-thumbnail">
+                    <div class="card-thumbnail-icon">🎱</div>
+                    <div class="card-badge-container">
+                        <span class="card-badge">HOT</span>
+                        <span class="card-badge">물리 엔진</span>
+                    </div>
+                </div>
+                <div class="card-header-info">
+                    <h2 class="card-title">원샷 핀볼 <span>⚡</span></h2>
+                    <p class="card-desc">물리 엔진 기반 술자리 생존 핀볼! 단 한 번의 핀볼 샷으로 승부하는 손끝 스릴.</p>
+                </div>
+                <div class="card-tags">
+                    <span class="tag">#핀볼</span>
+                    <span class="tag">#MatterJS</span>
+                    <span class="tag">#술자리게임</span>
+                </div>
+                <a href="./games/pinball/index.html" class="play-btn" onclick="event.stopPropagation()">
+                    게임 플레이 <span>➔</span>
+                </a>
+            </article>
+
+            <!-- Game 2: Neon Roulette -->
+            <article class="game-card roulette" onclick="location.href='./games/roulette/index.html'">
+                <div class="card-thumbnail">
+                    <div class="card-thumbnail-icon">🎰</div>
+                    <div class="card-badge-container">
+                        <span class="card-badge">POPULAR</span>
+                        <span class="card-badge">벌칙</span>
+                    </div>
+                </div>
+                <div class="card-header-info">
+                    <h2 class="card-title">네온 룰렛 <span>🔥</span></h2>
+                    <p class="card-desc">화려한 네온 조명 아래에서 돌리는 운명의 룰렛. 당첨자는 망설임 없이 원샷!</p>
+                </div>
+                <div class="card-tags">
+                    <span class="tag">#룰렛</span>
+                    <span class="tag">#복불복</span>
+                    <span class="tag">#네온비주얼</span>
+                </div>
+                <a href="./games/roulette/index.html" class="play-btn" onclick="event.stopPropagation()">
+                    게임 플레이 <span>➔</span>
+                </a>
+            </article>
+
+            <!-- Game 3: Mine Tile -->
+            <article class="game-card mines" onclick="location.href='./games/mines/index.html'">
+                <div class="card-thumbnail">
+                    <div class="card-thumbnail-icon">💣</div>
+                    <div class="card-badge-container">
+                        <span class="card-badge">NEW</span>
+                        <span class="card-badge">심리전</span>
+                    </div>
+                </div>
+                <div class="card-header-info">
+                    <h2 class="card-title">지뢰 타일 <span>💥</span></h2>
+                    <p class="card-desc">숨겨진 지뢰 타일을 피해 최고의 보상을 쟁취하라! 긴장감 넘치는 생존 타일 게임.</p>
+                </div>
+                <div class="card-tags">
+                    <span class="tag">#지뢰찾기</span>
+                    <span class="tag">#생존</span>
+                    <span class="tag">#복원불가</span>
+                </div>
+                <a href="./games/mines/index.html" class="play-btn" onclick="event.stopPropagation()">
+                    게임 플레이 <span>➔</span>
+                </a>
+            </article>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 <span>NEON ARCADE HUB</span>. All Rights Reserved. Pair programmed with Antigravity.</p>
+    </footer>
+
+    <!-- Interactive Scripts -->
+    <script>
+        // Canvas Interactive Particles
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const particleCount = 45;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.5 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.4;
+                this.speedY = (Math.random() - 0.5) * 0.4;
+                this.opacity = Math.random() * 0.5 + 0.2;
+                this.color = ['#00f0ff', '#ff007f', '#9d4edd', '#00ff88'][Math.floor(Math.random() * 4)];
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.opacity;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        // Quick Random Game Play Button
+        const gameUrls = [
+            './games/pinball/index.html',
+            './games/roulette/index.html',
+            './games/mines/index.html'
+        ];
+
+        document.getElementById('randomPlayBtn').addEventListener('click', () => {
+            const randomIndex = Math.floor(Math.random() * gameUrls.length);
+            location.href = gameUrls[randomIndex];
+        });
+    </script>
+</body>
+</html>
